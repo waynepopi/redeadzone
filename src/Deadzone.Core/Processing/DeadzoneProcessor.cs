@@ -12,7 +12,7 @@ public static class DeadzoneProcessor
         deadzone = Math.Clamp(
             deadzone,
             0f,
-            0.30f);
+            1.00f);
 
         if (deadzone <= 0f)
             return input;
@@ -25,7 +25,8 @@ public static class DeadzoneProcessor
                 (x * x) +
                 (y * y));
 
-        if (magnitude <= deadzone ||
+        if (deadzone >= 1f ||
+            magnitude <= deadzone ||
             magnitude <= float.Epsilon)
         {
             return new StickVector(

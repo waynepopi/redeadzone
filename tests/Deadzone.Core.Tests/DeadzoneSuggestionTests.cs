@@ -50,16 +50,29 @@ public class DeadzoneSuggestionTests
     }
 
     [Fact]
-    public void Test_ResultCappedAtThirtyPercent()
+    public void Test_ResultAboveThirtyPercentAllowed()
     {
-        // Large drift: 0.45 magnitude -> capped at 0.30 (30%)
+        // Large drift: ~0.4924 magnitude -> suggested 0.51 (51%)
         var samples = new[]
         {
             new StickVector(0.45f, 0.20f)
         };
 
         float result = DeadzoneSuggestion.Calculate(samples);
-        Assert.Equal(0.30f, result, Tolerance);
+        Assert.Equal(0.51f, result, Tolerance);
+    }
+
+    [Fact]
+    public void Test_ResultCappedAtOneHundredPercent()
+    {
+        // Extreme drift: > 1.0 magnitude -> capped at 1.00 (100%)
+        var samples = new[]
+        {
+            new StickVector(1.10f, 0.20f)
+        };
+
+        float result = DeadzoneSuggestion.Calculate(samples);
+        Assert.Equal(1.00f, result, Tolerance);
     }
 
     [Fact]

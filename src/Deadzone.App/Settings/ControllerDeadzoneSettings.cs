@@ -12,12 +12,12 @@ public sealed class ControllerDeadzoneSettings
     public float LeftStickDeadzone
     {
         get => _leftStickDeadzone;
-        set => _leftStickDeadzone = Math.Clamp(value, 0.0f, 0.30f);
+        set => _leftStickDeadzone = Math.Clamp(value, 0.0f, 1.00f);
     }
 
     public float RightStickDeadzone
     {
         get => _rightStickDeadzone;
-        set => _rightStickDeadzone = Math.Clamp(value, 0.0f, 0.30f);
+        set => _rightStickDeadzone = Math.Clamp(value, 0.0f, 1.00f);
     }
 }

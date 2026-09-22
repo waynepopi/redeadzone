@@ -196,7 +196,7 @@
                                 Style="{StaticResource DeadzoneSliderStyle}"
                                 Height="24"
                                 Margin="0,0,0,4"
-                                Minimum="0" Maximum="30" Value="8"
+                                Minimum="0" Maximum="100" Value="8"
                                 TickFrequency="1" IsSnapToTickEnabled="True"
                                 ValueChanged="LeftDeadzoneSlider_ValueChanged"/>
 
@@ -340,7 +340,7 @@
                                 Style="{StaticResource DeadzoneSliderStyle}"
                                 Height="24"
                                 Margin="0,0,0,4"
-                                Minimum="0" Maximum="30" Value="8"
+                                Minimum="0" Maximum="100" Value="8"
                                 TickFrequency="1" IsSnapToTickEnabled="True"
                                 ValueChanged="RightDeadzoneSlider_ValueChanged"/>
 

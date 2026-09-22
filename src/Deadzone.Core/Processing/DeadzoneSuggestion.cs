@@ -37,11 +37,11 @@ public static class DeadzoneSuggestion
 
     /// <summary>
     /// Calculates a suggested radial deadzone from a pre-computed maximum drift radius
-    /// (range 0..1). Formula: clamp(ceil((maxRadius + 0.01) × 100) / 100, 0.00, 0.30).
+    /// (range 0..1). Formula: clamp(ceil((maxRadius + 0.01) × 100) / 100, 0.00, 1.00).
     /// </summary>
     public static float Calculate(float maxRadius)
     {
         float suggested = MathF.Ceiling((maxRadius + 0.01f) * 100f) / 100f;
-        return Math.Clamp(suggested, 0f, 0.30f);
+        return Math.Clamp(suggested, 0f, 1.00f);
     }
 }

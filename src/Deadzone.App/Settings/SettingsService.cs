@@ -55,8 +55,8 @@ public sealed class SettingsService
                     {
                         if (value != null)
                         {
-                            value.LeftStickDeadzone = Math.Clamp(value.LeftStickDeadzone, 0.0f, 0.30f);
-                            value.RightStickDeadzone = Math.Clamp(value.RightStickDeadzone, 0.0f, 0.30f);
+                            value.LeftStickDeadzone = Math.Clamp(value.LeftStickDeadzone, 0.0f, 1.00f);
+                            value.RightStickDeadzone = Math.Clamp(value.RightStickDeadzone, 0.0f, 1.00f);
                             sanitizedControllers[key] = value;
                         }
                     }
