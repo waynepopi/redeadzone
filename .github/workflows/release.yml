@@ -1,0 +1,182 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    env:
+      ISCC_PATH: 'C:\Program Files (x86)\Inno Setup 7\ISCC.exe'
+      INNO_INSTALLER_URL: 'https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0.exe'
+      INNO_INSTALLER_HASH: ''  # Set after first verified download if desired
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Extract version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = '${{ github.ref_name }}'
+          $ver = $tag -replace '^v', ''
+          echo "VERSION=$ver" >> $env:GITHUB_OUTPUT
+          echo "TAG=$tag" >> $env:GITHUB_OUTPUT
+          Write-Host "Building release for version: $ver (tag: $tag)"
+
+      - name: Restore
+        run: dotnet restore Deadzone.sln
+
+      - name: Build (Release)
+        run: dotnet build Deadzone.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test Deadzone.sln -c Release --no-build
+
+      - name: Publish self-contained win-x64
+        shell: pwsh
+        run: |
+          $ver = '${{ steps.version.outputs.VERSION }}'
+          dotnet publish src/Deadzone.App/Deadzone.App.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=false `
+            -p:PublishTrimmed=false `
+            -p:Version=$ver `
+            -p:AssemblyVersion="$ver.0" `
+            -p:FileVersion="$ver.0" `
+            -o artifacts/publish/win-x64
+
+      - name: Verify critical publish outputs
+        shell: pwsh
+        run: |
+          $required = @('Deadzone.exe', 'HIDMaestro.Core.dll', 'SDL3.dll')
+          foreach ($f in $required) {
+            $fp = "artifacts/publish/win-x64/$f"
+            if (-not (Test-Path $fp)) {
+              Write-Error "Required file missing from publish: $f"
+              exit 1
+            }
+            Write-Host "OK: $f"
+          }
+
+      - name: Create ZIP
+        shell: pwsh
+        run: |
+          $ver = '${{ steps.version.outputs.VERSION }}'
+          New-Item -ItemType Directory -Path artifacts/release -Force | Out-Null
+          $zip = "artifacts/release/Deadzone-v$ver-win-x64.zip"
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory('artifacts/publish/win-x64', $zip)
+          Write-Host "Created: $zip ($([math]::Round((Get-Item $zip).Length/1MB,2)) MB)"
+
+      - name: Download Inno Setup 7
+        shell: pwsh
+        run: |
+          $url = '${{ env.INNO_INSTALLER_URL }}'
+          $out = 'innosetup-7.1.0.exe'
+          Write-Host "Downloading Inno Setup from: $url"
+          Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+
+      - name: Verify Inno Setup download via GitHub CLI attestation
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          # Attempt attestation verification. Requires gh CLI with attestation support.
+          # If gh does not support this command the step is marked as warning only.
+          $result = gh release verify-asset innosetup-7.1.0.exe --repo jrsoftware/issrc 2>&1
+          Write-Host $result
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Attestation verification not available or failed. Proceeding — verify manually if needed."
+          }
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Install Inno Setup 7 silently
+        shell: pwsh
+        run: |
+          Start-Process -FilePath 'innosetup-7.1.0.exe' -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-' -Wait
+          if (-not (Test-Path '${{ env.ISCC_PATH }}')) {
+            Write-Error "Inno Setup 7 installation failed — ISCC.exe not found."
+          }
+          Write-Host "Inno Setup 7 installed successfully."
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $ver = '${{ steps.version.outputs.VERSION }}'
+          & '${{ env.ISCC_PATH }}' "/DMyAppVersion=$ver" installer/Deadzone.iss
+          if ($LASTEXITCODE -ne 0) { Write-Error "Inno Setup compilation failed." }
+
+      - name: Compute SHA-256 hashes
+        shell: pwsh
+        run: |
+          $ver = '${{ steps.version.outputs.VERSION }}'
+          $releaseDir = 'artifacts/release'
+          $files = @(
+            "Deadzone-v$ver-win-x64.zip",
+            "Deadzone-v$ver-Setup.exe"
+          )
+          $lines = @()
+          foreach ($f in $files) {
+            $fp = Join-Path $releaseDir $f
+            if (-not (Test-Path $fp)) { Write-Error "Release file missing: $f" }
+            $hash = (Get-FileHash $fp -Algorithm SHA256).Hash
+            $lines += "$hash  $f"
+            Write-Host "$hash  $f"
+          }
+          $lines | Set-Content -Path "$releaseDir/SHA256SUMS.txt" -Encoding UTF8
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ver = '${{ steps.version.outputs.VERSION }}'
+          $tag = '${{ steps.version.outputs.TAG }}'
+          $releaseDir = 'artifacts/release'
+
+          $notes = @"
+          ## Deadzone $tag
+
+          Controller radial deadzone utility for Windows.
+
+          ### Requirements
+          - Windows 10 or Windows 11 (64-bit, x64)
+          - Administrator privileges
+
+          ### Installation
+          - **Installer (recommended):** Download and run ``Deadzone-v$ver-Setup.exe``
+          - **ZIP build:** Extract ``Deadzone-v$ver-win-x64.zip`` and run ``Deadzone.App.exe`` as Administrator
+
+          ### Important notes
+          - Deadzone requires administrator privileges to create the virtual controller.
+          - Physical controller hiding (HidHide) is optional and must be configured manually. It is **not** installed automatically.
+          - This release is **not code-signed**. Windows SmartScreen may warn about the installer. Verify the SHA-256 hash against ``SHA256SUMS.txt``.
+
+          ### Checksums
+          See ``SHA256SUMS.txt`` attached to this release.
+
+          ---
+          *Deadzone is an independent open-source project and is not affiliated with, endorsed by, or sponsored by Microsoft or Xbox.*
+          "@
+
+          gh release create $tag `
+            --title "Deadzone $tag" `
+            --notes $notes `
+            "$releaseDir/Deadzone-v$ver-Setup.exe#Deadzone-v$ver-Setup.exe" `
+            "$releaseDir/Deadzone-v$ver-win-x64.zip#Deadzone-v$ver-win-x64.zip" `
+            "$releaseDir/SHA256SUMS.txt#SHA256SUMS.txt"

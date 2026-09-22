@@ -1,0 +1,59 @@
+# Binaries
+bin/
+obj/
+*.pdb
+
+# Keep vendored DLLs in lib/ (they are intentional source dependencies)
+!lib/**
+
+# NuGet cache
+.nuget/
+packages/
+
+# Solution user files
+*.user
+*.suo
+*.sln.docproj
+*.userprefs
+*.USER_OPTIONS
+
+# IDE settings
+.vs/
+*.vsixmanifest
+*.vsixcache
+
+# Code-signing keys — never commit
+*.pfx
+*.p12
+*.cer
+*.key
+*.snk
+
+# Local settings (stored in %LOCALAPPDATA%\Deadzone at runtime)
+settings.json
+
+# Build artifacts output
+artifacts/
+
+# Installer output
+installer/output/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# Temporary files
+[Dd]ebug.*
+[Ss]ymbol.*
+[Ww]inEx[e|c|.exe]
+
+# macOS metadata
+.DS_Store
+
+# Intentionally tracked (do NOT add these to .gitignore):
+# assets/Deadzone.ico
+# LICENSE
+# THIRD_PARTY_NOTICES.md
+# lib/HIDMaestro/1.9.0/HIDMaestro.Core.dll
+# lib/HIDMaestro/1.9.0/LICENSE.txt

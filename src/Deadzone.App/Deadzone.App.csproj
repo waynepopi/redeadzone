@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <UseWindowsDesktopSdk>true</UseWindowsDesktopSdk>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\assets\Deadzone.ico</ApplicationIcon>
+    <AssemblyName>Deadzone</AssemblyName>
+    <RootNamespace>Deadzone.App</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>$(NoWarn);MSB3246</NoWarn>
+    <!-- Version metadata -->
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <Product>Deadzone</Product>
+    <Description>Controller radial deadzone utility for Windows</Description>
+    <Company>Deadzone contributors</Company>
+    <Copyright>Copyright (c) 2026 Deadzone contributors</Copyright>
+  </PropertyGroup>
+
+  <!-- SDL3 NuGet package -->
+  <ItemGroup>
+    <PackageReference Include="ppy.SDL3-CS" Version="2026.722.0" />
+  </ItemGroup>
+
+  <!-- HIDMaestro local DLL reference -->
+  <ItemGroup>
+    <Reference Include="HIDMaestro.Core">
+      <HintPath>..\..\lib\HIDMaestro\1.9.0\HIDMaestro.Core.dll</HintPath>
+      <Private>true</Private>
+      <EmbedInteropTypes>false</EmbedInteropTypes>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Project reference to Deadzone.Core -->
+  <ItemGroup>
+    <ProjectReference Include="..\Deadzone.Core\Deadzone.Core.csproj" />
+  </ItemGroup>
+
+</Project>

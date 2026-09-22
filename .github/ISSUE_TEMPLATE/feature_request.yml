@@ -1,0 +1,47 @@
+name: Feature Request
+description: Suggest an improvement or new feature for Deadzone
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe your feature request clearly.
+        Note: Deadzone's scope is radial deadzone correction and virtual Xbox controller output.
+        Requests significantly outside this scope may be closed as out-of-scope.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature description
+      description: What would you like to see added or changed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem being solved
+      description: What problem does this feature address? What is currently frustrating or missing?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed behaviour
+      description: How would this feature work from the user's perspective?
+    validations:
+      required: true
+
+  - type: input
+    id: controller
+    attributes:
+      label: Controller or use case (if applicable)
+      description: "e.g. Xbox Series X controller via Bluetooth, DualSense via USB"
+      placeholder: "Optional — leave blank if not controller-specific"
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Have you tried any workarounds? Are there alternative approaches?
