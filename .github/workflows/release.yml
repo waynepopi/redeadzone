@@ -13,9 +13,8 @@ jobs:
     runs-on: windows-latest
 
     env:
-      ISCC_PATH: 'C:\Program Files (x86)\Inno Setup 7\ISCC.exe'
-      INNO_INSTALLER_URL: 'https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0.exe'
-      INNO_INSTALLER_HASH: ''  # Set after first verified download if desired
+      INNO_INSTALLER_URL: 'https://github.com/jrsoftware/issrc/releases/download/is-7_1_0/innosetup-7.1.0-x64.exe'
+      INNO_INSTALLER_HASH: '0362A383ED217D4C4239B5933866DD96D3EB2102737DA92F80F6057A4B40DF2F'
 
     steps:
       - name: Checkout
@@ -87,38 +86,48 @@ jobs:
         shell: pwsh
         run: |
           $url = '${{ env.INNO_INSTALLER_URL }}'
-          $out = 'innosetup-7.1.0.exe'
+          $out = 'innosetup-7.1.0-x64.exe'
           Write-Host "Downloading Inno Setup from: $url"
           Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
 
-      - name: Verify Inno Setup download via GitHub CLI attestation
+      - name: Verify Inno Setup download hash
         shell: pwsh
-        continue-on-error: true
         run: |
-          # Attempt attestation verification. Requires gh CLI with attestation support.
-          # If gh does not support this command the step is marked as warning only.
-          $result = gh release verify-asset innosetup-7.1.0.exe --repo jrsoftware/issrc 2>&1
-          Write-Host $result
-          if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Attestation verification not available or failed. Proceeding — verify manually if needed."
+          $actual = (Get-FileHash 'innosetup-7.1.0-x64.exe' -Algorithm SHA256).Hash
+          $expected = '${{ env.INNO_INSTALLER_HASH }}'
+          Write-Host "Expected SHA-256: $expected"
+          Write-Host "Actual SHA-256:   $actual"
+          if ($actual.ToUpper() -ne $expected.ToUpper()) {
+            Write-Error "Inno Setup download SHA-256 mismatch!"
+            exit 1
           }
-        env:
-          GH_TOKEN: ${{ github.token }}
+          Write-Host "Inno Setup SHA-256 verified successfully."
 
       - name: Install Inno Setup 7 silently
         shell: pwsh
         run: |
-          Start-Process -FilePath 'innosetup-7.1.0.exe' -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-' -Wait
-          if (-not (Test-Path '${{ env.ISCC_PATH }}')) {
-            Write-Error "Inno Setup 7 installation failed — ISCC.exe not found."
+          Write-Host "Installing Inno Setup 7 silently..."
+          Start-Process -FilePath '.\innosetup-7.1.0-x64.exe' -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-' -Wait
+          $candidates = @(
+            'C:\Program Files\Inno Setup 7\ISCC.exe',
+            'C:\Program Files (x86)\Inno Setup 7\ISCC.exe'
+          )
+          $found = $null
+          foreach ($c in $candidates) {
+            if (Test-Path $c) { $found = $c; break }
           }
-          Write-Host "Inno Setup 7 installed successfully."
+          if (-not $found) {
+            Write-Error "Inno Setup 7 installation failed — ISCC.exe not found in expected locations."
+            exit 1
+          }
+          Write-Host "Inno Setup 7 installed at: $found"
+          echo "ISCC_PATH=$found" >> $env:GITHUB_ENV
 
       - name: Build installer
         shell: pwsh
         run: |
           $ver = '${{ steps.version.outputs.VERSION }}'
-          & '${{ env.ISCC_PATH }}' "/DMyAppVersion=$ver" installer/Deadzone.iss
+          & "$env:ISCC_PATH" "/DMyAppVersion=$ver" installer/Deadzone.iss
           if ($LASTEXITCODE -ne 0) { Write-Error "Inno Setup compilation failed." }
 
       - name: Compute SHA-256 hashes
@@ -160,7 +169,7 @@ jobs:
 
           ### Installation
           - **Installer (recommended):** Download and run ``Deadzone-v$ver-Setup.exe``
-          - **ZIP build:** Extract ``Deadzone-v$ver-win-x64.zip`` and run ``Deadzone.App.exe`` as Administrator
+          - **ZIP build:** Extract ``Deadzone-v$ver-win-x64.zip`` and run ``Deadzone.exe`` as Administrator
 
           ### Important notes
           - Deadzone requires administrator privileges to create the virtual controller.
