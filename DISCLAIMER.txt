@@ -1,0 +1,78 @@
+================================================================================
+DEADZONE END-USER AGREEMENT, DISCLAIMER OF WARRANTY & LIMITATION OF LIABILITY
+================================================================================
+
+PLEASE READ THIS AGREEMENT CAREFULLY BEFORE INSTALLING OR USING THIS SOFTWARE.
+YOU MUST ACCEPT ALL TERMS AND ACKNOWLEDGE THIS DISCLAIMER TO PROCEED WITH 
+THE INSTALLATION.
+
+--------------------------------------------------------------------------------
+1. OPEN SOURCE LICENSE (MIT)
+--------------------------------------------------------------------------------
+
+Copyright (c) 2026 Deadzone Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+--------------------------------------------------------------------------------
+2. "AS IS" WARRANTY & COMPLETE LIMITATION OF LIABILITY
+--------------------------------------------------------------------------------
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+
+IN NO EVENT SHALL THE AUTHORS, DEVELOPERS, CONTRIBUTORS, OR COPYRIGHT HOLDERS
+BE LIABLE FOR ANY CLAIM, DAMAGES, LOSSES, OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION
+WITH THE SOFTWARE, THE USE OF THE SOFTWARE, OR OTHER DEALINGS IN THE SOFTWARE.
+
+WITHOUT LIMITING THE FOREGOING, YOU EXPRESSLY ACKNOWLEDGE AND AGREE THAT:
+a) You install and run Deadzone and any accompanying components entirely at
+   your own risk and discretion.
+b) The authors and contributors shall NOT be held responsible or liable for any
+   direct, indirect, incidental, consequential, special, or punitive damages,
+   including without limitation:
+   - Physical controller, peripheral, or hardware malfunction or damage;
+   - Operating system instability, crashes, driver conflicts, or boot issues;
+   - Game bans, anti-cheat suspensions, or online account penalties resulting
+     from virtual device emulation or input modification;
+   - Loss of data, loss of profits, or business interruption.
+
+--------------------------------------------------------------------------------
+3. VIRTUAL CONTROLLER & DRIVER INTERACTIONS
+--------------------------------------------------------------------------------
+
+Deadzone requires Administrator privileges to create and deploy virtual input
+devices using HIDMaestro, and may interact with kernel-level device filtering
+drivers such as Nefarius HidHide. System-level device emulation interacts
+directly with Windows input subsystems. By continuing, you confirm that you
+understand these operations and assume full responsibility for running them on
+your system.
+
+--------------------------------------------------------------------------------
+4. THIRD-PARTY COMPONENTS & TRADEMARK NOTICES
+--------------------------------------------------------------------------------
+
+a) HidHide is an independent open-source driver developed and copyrighted by
+   Benjamin Höglinger-Stelzer (Nefarius Software Solutions e.U.), licensed under
+   the GNU General Public License v3.0 (GPLv3).
+b) Deadzone is an independent open-source project and is NOT affiliated with,
+   endorsed by, sponsored by, or associated with Microsoft Corporation, Xbox,
+   Sony Interactive Entertainment, Nintendo Co., Ltd., or Nefarius Software
+   Solutions e.U. All product names, logos, and brands are property of their
+   respective owners.
+
+--------------------------------------------------------------------------------
+BY SELECTING "I ACCEPT THE AGREEMENT" AND CONTINUING WITH THE INSTALLATION,
+YOU CONFIRM THAT YOU HAVE READ, UNDERSTOOD, AND AGREED TO BE BOUND BY ALL TERMS,
+CONDITIONS, AND LIABILITY WAIVERS STATED ABOVE.
+================================================================================

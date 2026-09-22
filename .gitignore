@@ -34,6 +34,7 @@ settings.json
 
 # Build artifacts output
 artifacts/
+redist/
 
 # Installer output
 installer/output/

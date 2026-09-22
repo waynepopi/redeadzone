@@ -123,6 +123,22 @@ jobs:
           Write-Host "Inno Setup 7 installed at: $found"
           echo "ISCC_PATH=$found" >> $env:GITHUB_ENV
 
+      - name: Download HidHide installer for bundling
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path redist -Force | Out-Null
+          $url = 'https://github.com/nefarius/HidHide/releases/download/v1.5.230.0/HidHide_1.5.230_x64.exe'
+          $out = 'redist/HidHide_1.5.230_x64.exe'
+          $expectedHash = 'F4BBBCB82E6258641B887C74BC81C4C5F66E4AA811808DFC304347687B7605F6'
+          Write-Host "Downloading HidHide installer from: $url"
+          Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+          $actualHash = (Get-FileHash $out -Algorithm SHA256).Hash
+          if ($actualHash.ToUpper() -ne $expectedHash.ToUpper()) {
+            Write-Error "HidHide installer SHA-256 hash mismatch!"
+            exit 1
+          }
+          Write-Host "HidHide installer verified successfully ($actualHash)."
+
       - name: Build installer
         shell: pwsh
         run: |

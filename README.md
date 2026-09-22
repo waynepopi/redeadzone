@@ -93,17 +93,21 @@ Without HidHide, games receive input from *both* the physical controller *and* t
 
 HidHide is a kernel-level device-hiding driver that lets you hide the physical controller from all applications except Deadzone.
 
-**Deadzone does not install or configure HidHide automatically.** This is a one-time manual setup.
+**The Deadzone installer (`Deadzone-v0.1.0-Setup.exe`) bundles the official signed HidHide installer and automatically configures the application whitelist for you.**
+
+If you used the portable ZIP, or wish to configure HidHide manually:
 
 ### Step 1 — Install HidHide
 
-Download from the official repository:
+If not already installed via the setup wizard, download from the official repository:
 
 > **https://github.com/nefarius/HidHide/releases**
 
 Run the installer. A system restart may be required.
 
 ### Step 2 — Whitelist Deadzone
+
+*(Automatically configured if you used the Deadzone installer)*
 
 1. Open **HidHide Configuration Client** from the Start menu.
 2. Go to the **Applications** tab.
@@ -130,10 +134,10 @@ On the **Devices** tab, ensure the **Enable device hiding** toggle is **ON**.
 
 | Problem | Solution |
 |---|---|
-| Deadzone no longer sees the controller | Ensure `Deadzone.App.exe` is whitelisted in the Applications tab |
+| Deadzone no longer sees the controller | Ensure `Deadzone.exe` is whitelisted in the Applications tab |
 | Game still sees both controllers | Confirm device hiding is enabled (cloak toggle is ON) |
 | Virtual controller not appearing in game | Press ENABLE in Deadzone; verify HIDMaestro initialised successfully |
-| HidHide not installed | Re-run the HidHide installer as Administrator |
+| HidHide not installed | Re-run the installer or install HidHide from official GitHub |
 
 ---
 

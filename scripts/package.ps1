@@ -110,6 +110,23 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::CreateFromDirectory($PublishDir, $ZipPath)
 Write-Host "  Created: $ZipPath ($([math]::Round((Get-Item $ZipPath).Length / 1MB, 2)) MB)" -ForegroundColor Green
 
+# --- Prepare redistributables ---
+Write-Host "`n[6b] Preparing redistributables..." -ForegroundColor Yellow
+$redistDir = Join-Path $RepoRoot "redist"
+New-Item -ItemType Directory -Path $redistDir -Force | Out-Null
+$hidHidePath = Join-Path $redistDir "HidHide_1.5.230_x64.exe"
+$hidHideExpectedHash = "F4BBBCB82E6258641B887C74BC81C4C5F66E4AA811808DFC304347687B7605F6"
+if (-not (Test-Path $hidHidePath)) {
+    Write-Host "  Downloading HidHide installer..." -ForegroundColor Cyan
+    $hidHideUrl = "https://github.com/nefarius/HidHide/releases/download/v1.5.230.0/HidHide_1.5.230_x64.exe"
+    Invoke-WebRequest -Uri $hidHideUrl -OutFile $hidHidePath -UseBasicParsing
+}
+$hidHideActualHash = (Get-FileHash $hidHidePath -Algorithm SHA256).Hash
+if ($hidHideActualHash.ToUpper() -ne $hidHideExpectedHash.ToUpper()) {
+    Write-Error "HidHide installer hash mismatch: expected $hidHideExpectedHash, got $hidHideActualHash"
+}
+Write-Host "  OK: HidHide installer verified." -ForegroundColor Green
+
 # --- Installer ---
 Write-Host "`n[7/8] Building installer..." -ForegroundColor Yellow
 # Pass version to ISCC via define override

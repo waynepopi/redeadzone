@@ -14,7 +14,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-AppPublisherURL=https://github.com/
+AppPublisherURL=https://github.com/waynepopi/redeadzone
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
@@ -23,6 +23,7 @@ OutputBaseFilename=Deadzone-v{#MyAppVersion}-Setup
 SetupIconFile=..\assets\Deadzone.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName} {#MyAppVersion}
+LicenseFile=..\DISCLAIMER.txt
 Compression=lzma2/ultra64
 SolidCompression=yes
 PrivilegesRequired=admin
@@ -39,17 +40,24 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional icons:"; Flags: unchecked
+Name: "installhidhide"; Description: "Install HidHide driver (recommended to prevent double-controller input in games)"; GroupDescription: "Recommended components:"; Check: not IsHidHideInstalled
 Name: "launchapp"; Description: "&Launch Deadzone after installation"; GroupDescription: "After installation:"; Flags: unchecked
 
 [Files]
 ; Copy the entire self-contained publish output
 Source: "{#MyPublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
+; Bundled official signed HidHide installer (extracted to temp, deleted after install)
+Source: "..\redist\HidHide_1.5.230_x64.exe"; DestDir: "{tmp}"; Flags: ignoreversion deleteafterinstall; Check: not IsHidHideInstalled
+
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
+; Install HidHide driver if selected and not already installed
+Filename: "{tmp}\HidHide_1.5.230_x64.exe"; Parameters: "/passive /norestart"; StatusMsg: "Installing HidHide controller cloaking driver..."; Tasks: installhidhide; Check: not IsHidHideInstalled; Flags: waituntilterminated
+
 ; Optional: launch after install
 Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent; Tasks: launchapp
 
@@ -63,26 +71,77 @@ Filename: "schtasks.exe"; Parameters: "/Delete /TN ""Deadzone"" /F"; Flags: runh
 Type: filesandordirs; Name: "{app}"
 
 [Code]
-// Close Deadzone if it is running before install/uninstall proceeds.
 function InitializeSetup(): Boolean;
 begin
   Result := True;
+end;
+
+// Checks whether the HidHide driver service is installed on the system
+function IsHidHideInstalled(): Boolean;
+begin
+  Result := RegKeyExists(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide');
 end;
 
 procedure CloseDeadzoneIfRunning();
 var
   ResultCode: Integer;
 begin
-  // Gently ask Windows to close the Deadzone process before replacing files.
-  // /F force-closes only the specific process image — does not affect other applications.
+  // Ask Windows to close the Deadzone process before replacing files.
+  Exec('taskkill.exe', '/IM Deadzone.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   Exec('taskkill.exe', '/IM Deadzone.App.exe /T', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  // Ignore ResultCode — process may not be running.
+end;
+
+// Automatically registers Deadzone.exe in HidHide's Whitelist registry entry
+procedure AddToHidHideWhitelist();
+var
+  AppExe: String;
+  CurrentList: TArrayOfString;
+  I: Integer;
+  AlreadyWhitelisted: Boolean;
+  NewList: TArrayOfString;
+  OrigCount: Integer;
+begin
+  if not RegKeyExists(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide\Parameters') then
+    Exit;
+
+  AppExe := ExpandConstant('{app}\{#MyAppExeName}');
+  AlreadyWhitelisted := False;
+
+  if RegQueryMultiStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide\Parameters', 'Whitelist', CurrentList) then
+  begin
+    for I := 0 to GetArrayLength(CurrentList) - 1 do
+    begin
+      if CompareText(Trim(CurrentList[I]), Trim(AppExe)) = 0 then
+      begin
+        AlreadyWhitelisted := True;
+        Break;
+      end;
+    end;
+  end;
+
+  if not AlreadyWhitelisted then
+  begin
+    OrigCount := GetArrayLength(CurrentList);
+    SetArrayLength(NewList, OrigCount + 1);
+    for I := 0 to OrigCount - 1 do
+      NewList[I] := CurrentList[I];
+    NewList[OrigCount] := AppExe;
+    RegWriteMultiStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide\Parameters', 'Whitelist', NewList);
+  end;
 end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
   CloseDeadzoneIfRunning();
   Result := '';
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    AddToHidHideWhitelist();
+  end;
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
