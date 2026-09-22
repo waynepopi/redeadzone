@@ -58,8 +58,8 @@ Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 ; Install HidHide driver if selected and not already installed
 Filename: "{tmp}\HidHide_1.5.230_x64.exe"; Parameters: "/passive /norestart"; StatusMsg: "Installing HidHide controller cloaking driver..."; Tasks: installhidhide; Check: not IsHidHideInstalled; Flags: waituntilterminated
 
-; Optional: launch after install
-Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent; Tasks: launchapp
+; Optional: launch after install (retaining administrator privileges)
+Filename: "{app}\{#MyAppExeName}"; Description: "Launch {#MyAppName}"; Flags: nowait postinstall skipifsilent runascurrentuser; Tasks: launchapp
 
 [UninstallRun]
 ; Best-effort removal of the Deadzone startup scheduled task
