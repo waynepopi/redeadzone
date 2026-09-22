@@ -95,38 +95,24 @@ end;
 procedure AddToHidHideWhitelist();
 var
   AppExe: String;
-  CurrentList: TArrayOfString;
-  I: Integer;
-  AlreadyWhitelisted: Boolean;
-  NewList: TArrayOfString;
-  OrigCount: Integer;
+  CurrentValues: String;
 begin
   if not RegKeyExists(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide\Parameters') then
     Exit;
 
   AppExe := ExpandConstant('{app}\{#MyAppExeName}');
-  AlreadyWhitelisted := False;
 
-  if RegQueryMultiStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide\Parameters', 'Whitelist', CurrentList) then
+  if RegQueryMultiStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide\Parameters', 'Whitelist', CurrentValues) then
   begin
-    for I := 0 to GetArrayLength(CurrentList) - 1 do
+    if Pos(Uppercase(AppExe), Uppercase(CurrentValues)) = 0 then
     begin
-      if CompareText(Trim(CurrentList[I]), Trim(AppExe)) = 0 then
-      begin
-        AlreadyWhitelisted := True;
-        Break;
-      end;
+      CurrentValues := CurrentValues + #0 + AppExe + #0;
+      RegWriteMultiStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide\Parameters', 'Whitelist', CurrentValues);
     end;
-  end;
-
-  if not AlreadyWhitelisted then
+  end
+  else
   begin
-    OrigCount := GetArrayLength(CurrentList);
-    SetArrayLength(NewList, OrigCount + 1);
-    for I := 0 to OrigCount - 1 do
-      NewList[I] := CurrentList[I];
-    NewList[OrigCount] := AppExe;
-    RegWriteMultiStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide\Parameters', 'Whitelist', NewList);
+    RegWriteMultiStringValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Services\HidHide\Parameters', 'Whitelist', AppExe + #0);
   end;
 end;
 
